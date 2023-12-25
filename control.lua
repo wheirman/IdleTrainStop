@@ -1,5 +1,3 @@
-require("lib")
-
 function Init()
 	global.TrainStop = {}
 	global.TrainStopName = "Idle Stop"
@@ -89,7 +87,7 @@ function ON_TRAIN_CREATED(event)
 	local old_train_id_2 = event.old_train_id_2
 
 	global.TrainList[train.id] = train
-	
+
 	if old_train_id_1 then
 		global.TrainList[old_train_id_1] = nil
 	end
@@ -114,8 +112,17 @@ function AddSchedule(train)
 	train.schedule = schedule
 end
 
+function GetTrainNumber(train)
+	if train.locomotives["front_movers"] then
+		return train.locomotives["front_movers"][1].unit_number
+	elseif train.locomotives["back_movers"] then
+		return train.locomotives["back_movers"][1].unit_number
+	end
+	return train.id
+end
+
 function ON_600TH_TICK()
-	if Count(global.TrainStop) > 0 then 
+	if global.TrainStop then
 		for i,train in pairs(global.TrainList) do
 			if not train.valid then
 				global.TrainList[i] = nil
@@ -130,6 +137,7 @@ function ON_600TH_TICK()
 				or train.state == defines.train_state.no_path
 				or train.state == defines.train_state.destination_full
 			then
+				game.print(string.format('Sending idle [train=%d] to depot', GetTrainNumber(train)))
 				AddSchedule(train)
 			end
 	
