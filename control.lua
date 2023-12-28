@@ -100,10 +100,6 @@ script.on_event(defines.events.on_train_created,ON_TRAIN_CREATED)
 function AddSchedule(train)
     local schedule = train.schedule or {records = {}, current = 1}
 
-    for _,record in pairs(schedule.records) do
-        if record.station == global.TrainStopName then return end
-    end
-
     local record = {station = global.TrainStopName, temporary = true}
     table.insert(schedule.records,schedule.current,record)
     train.schedule = schedule
@@ -118,7 +114,7 @@ function GetTrainNumber(train)
     return train.id
 end
 
-function ON_600TH_TICK()
+function PERIODIC()
     if global.TrainStop then
         for i,train in pairs(global.TrainList) do
             if not train.valid then
@@ -130,11 +126,17 @@ function ON_600TH_TICK()
 
             if train.schedule == nil then goto continue end
 
+            for _,record in pairs(train.schedule.records) do
+                if record.station == global.TrainStopName then goto continue end
+            end
+
+            if train.station and train.station.backer_name == global.TrainStopName then goto continue end
+
             if train.state == defines.train_state.no_schedule
                 or train.state == defines.train_state.no_path
                 or train.state == defines.train_state.destination_full
             then
-                game.print(string.format('Sending idle [train=%d] to depot', GetTrainNumber(train)))
+                --game.print(string.format('Sending idle [train=%d] to depot', GetTrainNumber(train)))
                 AddSchedule(train)
             end
     
@@ -142,4 +144,4 @@ function ON_600TH_TICK()
         end    
     end
 end
-script.on_nth_tick(600,ON_600TH_TICK)    
+script.on_nth_tick(600,PERIODIC)
