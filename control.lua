@@ -114,6 +114,29 @@ function GetTrainNumber(train)
     return train.id
 end
 
+function GetTrainNextStation(train)
+    if train.schedule == nil then return nil end
+    if train.schedule.current == #train.schedule.records then
+        return train.schedule.records[1].station
+    else
+        return train.schedule.records[train.schedule.current + 1].station
+    end
+end
+
+function IsTrainStationDisabled(station)
+    for _, surface in pairs(game.surfaces) do
+        local stations = surface.find_entities_filtered{type='train-stop'}
+        for _, entity in pairs(stations) do
+            if entity.backer_name == station then
+                if entity.get_control_behavior() == nil or not entity.get_control_behavior().disabled then
+                    return false
+                end
+            end
+        end
+    end
+    return true
+end
+
 function PERIODIC()
     if global.TrainStop then
         for i,train in pairs(global.TrainList) do
@@ -135,6 +158,7 @@ function PERIODIC()
             if train.state == defines.train_state.no_schedule
                 or train.state == defines.train_state.no_path
                 or train.state == defines.train_state.destination_full
+                or (train.state == defines.train_state.wait_station and IsTrainStationDisabled(GetTrainNextStation(train)))
             then
                 --game.print(string.format('Sending idle [train=%d] to depot', GetTrainNumber(train)))
                 AddSchedule(train)
