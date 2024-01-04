@@ -2,6 +2,7 @@ function Init()
     global.TrainStop = {}
     global.TrainStopName = "Idle Stop"
     global.TrainList = {}
+    global.StationList = nil
 end
 
 function EnableIdleTrainStop()
@@ -22,24 +23,23 @@ function CreateTrainList()
     end
 end
 
+function CreateStationList()
+    global.StationList = {}
+    for _,surface in pairs(game.surfaces) do
+        local stations = surface.find_entities_filtered{type='train-stop'}
+        for _, entity in pairs(stations) do
+            global.StationList[entity.unit_number] = entity
+        end
+    end
+end
+
 function ON_INIT()
     Init()
     EnableIdleTrainStop()
     CreateTrainList()
+    CreateStationList()
 end
 script.on_init(ON_INIT)
-
-function CheckTrainList()
-    if global.TrainList then
-        for i,train in pairs(global.TrainList) do
-            if train and train.valid then
-                ::pass::
-            else
-                global.TrainList[i] = nil
-            end
-        end
-    end
-end
 
 function ON_BUILT_ENTITY(event)
     local entity = event.created_entity or event.entity
@@ -47,6 +47,8 @@ function ON_BUILT_ENTITY(event)
         if entity.name == "idle-train-stop" then
             table.insert(global.TrainStop,entity)
             entity.backer_name = global.TrainStopName
+        elseif entity.name == "train-stop" then
+            global.StationList[entity.unit_number] = entity
         end
     end
 end
@@ -62,6 +64,8 @@ function ON_REMOVE_ENTITY(event)
                     break
                 end
             end
+        elseif entity.name == "train-stop" then
+            global.StationList[entity.unit_number] = nil
         end
     end
 end
@@ -124,21 +128,30 @@ function GetTrainNextStation(train)
 end
 
 function IsTrainStationDisabled(station)
-    for _, surface in pairs(game.surfaces) do
-        local stations = surface.find_entities_filtered{type='train-stop'}
-        for _, entity in pairs(stations) do
-            if entity.backer_name == station then
-                if entity.get_control_behavior() == nil or not entity.get_control_behavior().disabled then
-                    return false
-                end
+    local found = false
+    for _, entity in pairs(global.StationList) do
+        if entity.backer_name == station then
+            if entity.get_control_behavior() == nil or not entity.get_control_behavior().disabled then
+                return false
             end
+            found = true
         end
     end
-    return true
+    if found then
+        -- Station with this name found but none were enabled
+        return true
+    else
+        -- Station with this name not found, might mean global.StationList is not up-to-date?
+        return false
+    end
 end
 
 function PERIODIC()
     if global.TrainStop then
+        if global.StationList == nil then
+            -- Migration to v0.4.0+: create global.StationList if it does not yet exist
+            CreateStationList()
+        end
         for i,train in pairs(global.TrainList) do
             if not train.valid then
                 global.TrainList[i] = nil
