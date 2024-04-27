@@ -1,7 +1,7 @@
 {
 	"name":"IdleTrainStop",
 	"author":"Rincewind42",
-	"version":"0.4.0",
+	"version":"0.5.0",
 	"title":"Automatic Train Depot",
 	"description":"This mod sends idle/blocked trains to the depot to get them out of your way.",
 	"factorio_version":"1.1",
