@@ -171,7 +171,7 @@ function PERIODIC()
             if train.state == defines.train_state.no_schedule
                 or train.state == defines.train_state.no_path
                 or train.state == defines.train_state.destination_full
-                --or (train.state == defines.train_state.wait_station and IsTrainStationDisabled(GetTrainNextStation(train)))
+                or (train.state == defines.train_state.wait_station and IsTrainStationDisabled(GetTrainNextStation(train)))
             then
                 --game.print(string.format('Sending idle [train=%d] to depot', GetTrainNumber(train)))
                 AddSchedule(train)
