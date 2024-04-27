@@ -181,4 +181,4 @@ function PERIODIC()
         end
     end
 end
-script.on_nth_tick(600,PERIODIC)
+script.on_nth_tick(60*30,PERIODIC)
