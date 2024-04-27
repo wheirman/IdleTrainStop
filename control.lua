@@ -8,7 +8,7 @@ end
 function EnableIdleTrainStop()
     for _,force in pairs(game.forces) do
         local tech = force.technologies['automated-rail-transportation']
-        if tech and tech.researched then 
+        if tech and tech.researched then
             force.recipes['idle-train-stop'].enabled = true
         end
     end
@@ -53,7 +53,7 @@ function ON_BUILT_ENTITY(event)
     end
 end
 script.on_event({defines.events.on_built_entity,defines.events.on_robot_built_entity,defines.events.script_raised_built},ON_BUILT_ENTITY)
-    
+
 function ON_REMOVE_ENTITY(event)
     local entity = event.entity
     if entity and entity.valid then
@@ -130,7 +130,7 @@ end
 function IsTrainStationDisabled(station)
     local found = false
     for _, entity in pairs(global.StationList) do
-        if entity.backer_name == station then
+        if entity ~= nil and entity.backer_name == station then
             if entity.get_control_behavior() == nil or not entity.get_control_behavior().disabled then
                 return false
             end
@@ -157,7 +157,7 @@ function PERIODIC()
                 global.TrainList[i] = nil
                 goto continue
             end
-            
+
             if train.manual_mode then goto continue end
 
             if train.schedule == nil then goto continue end
@@ -176,9 +176,9 @@ function PERIODIC()
                 --game.print(string.format('Sending idle [train=%d] to depot', GetTrainNumber(train)))
                 AddSchedule(train)
             end
-    
+
             ::continue::
-        end    
+        end
     end
 end
 script.on_nth_tick(600,PERIODIC)
