@@ -130,7 +130,7 @@ end
 function IsTrainStationDisabled(station)
     local found = false
     for _, entity in pairs(global.StationList) do
-        if entity ~= nil and entity.backer_name == station then
+        if entity.valid and entity.backer_name == station then
             if entity.get_control_behavior() == nil or not entity.get_control_behavior().disabled then
                 return false
             end
